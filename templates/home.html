@@ -1,0 +1,61 @@
+
+{% extends "base.html" %}
+{% load static %}
+
+{% block content  %}
+
+
+<!-- ========================= SECTION MAIN ========================= -->
+<section class="section-intro padding-y-sm">
+	<div class="container">
+		
+		<div class="intro-banner-wrap">
+			<img src="{% static './images/banners/cover.jpg' %}" class="img-fluid rounded">
+		</div>
+		
+	</div> <!-- container //  -->
+</section>
+<!-- ========================= SECTION MAIN END// ========================= -->
+
+<!-- ========================= SECTION  ========================= -->
+<section class="section-name padding-y-sm">
+	<div class="container">
+		
+		<header class="section-heading">
+			<a href="{% url 'store' %}" class="btn btn-outline-primary float-right">See all</a>
+			<h3 class="section-title">Popular products</h3>
+		</header><!-- sect-heading -->
+		
+		<div class="row">
+			{% comment %} all product show on product page {% endcomment %}
+			{% for product in products %}
+
+			<div class="col-md-3">
+				<div class="card card-product-grid">
+					<a href="{{ product.get_url }}" class="img-wrap"><img src="{{ product.p_image.url }}" alt="{{ product.product_name }}"></a>
+					<figcaption class="info-wrap">
+						{% comment %} everce url fist and second way mention following if first way selct then product inside product model define get_url fun {% endcomment %}
+						<a href="{{ product.get_url }}" class="title">{{ product.product_name }}</a>
+						
+						{% comment %} if we can use second way then no any fun declear {% endcomment %}
+						{% comment %} <a href="{% url 'product_detail' product.category.slug product.slug %}" class="title">{{ product.product_name }}</a> {% endcomment %}
+						<div class="price mt-1">{{ product.price }}</div> <!-- price-wrap.// -->
+					</figcaption>
+				</div>
+			</div> <!-- col.// -->
+			
+			{% endfor %}
+		</div> <!-- row.// -->
+		
+	</div><!-- container // -->
+</section>
+<!-- ========================= SECTION  END// ========================= -->
+
+
+
+</body>
+</html>
+{% endblock  %}
+
+
+
