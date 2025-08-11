@@ -5,6 +5,7 @@ from django.contrib.auth.models import AbstractBaseUser,BaseUserManager
 
 
 class MyAccountManager(BaseUserManager):
+        # this fun is simple user not superuser not admin user normal user only 
         def create_user(self, first_name, last_name, username,  email, password=None, **extra_fields):
             if not email:
                   raise ValueError("The Email field must be set")
@@ -22,6 +23,7 @@ class MyAccountManager(BaseUserManager):
             user.save(using = self._db)
             return user
             
+        # this fun is superuser user is superuser , admin user not normal  user this user all permis allow 
         def create_superuser(self, first_name, last_name, username,  email, password=None):
              user = self.create_user(
                 email = self.normalize_email(email),
@@ -29,7 +31,6 @@ class MyAccountManager(BaseUserManager):
                 password=password,
                 first_name = first_name,
                 last_name = last_name,
-
              )
 
              user.is_admin = True
@@ -41,16 +42,13 @@ class MyAccountManager(BaseUserManager):
  
 
 
-
-
-# Create the custom user model
+# Create the custom user model create normal user 
 class Account(AbstractBaseUser):
     first_name          = models.CharField(max_length=50)
     last_name           = models.CharField(max_length=50)
     username            = models.CharField(max_length=50, unique=True)
     email               = models.EmailField(max_length=100, unique=True)
     phone_number        = models.CharField(max_length=50)
-
 
     # required fields
     date_joined         = models.DateTimeField(auto_now_add=True)
@@ -71,7 +69,6 @@ class Account(AbstractBaseUser):
     
     def has_perm(self, perm, obj=None):
         return self.is_admin
-    
 
     def has_module_perms(self, add_label):
         return True
