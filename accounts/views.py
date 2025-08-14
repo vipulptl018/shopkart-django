@@ -3,7 +3,12 @@ from .forms import RegistrationForm
 from .models import Account
 from django.contrib import messages,auth
 from django.contrib.auth.decorators import login_required
+from carts.models import CartItem,Cart
+from carts.views import _cart_id
 # Create your views here.
+import requests
+from urllib.parse import urlparse,parse_qs
+
 
 
 #Verification email
@@ -56,19 +61,69 @@ def login(request):
     if request.method == "POST":
         email = request.POST['email']
         password = request.POST['password']
-
-        print(email)
-        print("pass", password)
-
         user = auth.authenticate(email=email, password=password)
 
-        print("user is  ",user)
-
         if user is not None:
+            try:
+                cart = Cart.objects.get(cart_id = _cart_id(request))
+                is_cart_id_exists = CartItem.objects.filter(cart=cart)
+                if is_cart_id_exists:
+                    cart_item = CartItem.objects.filter(cart = cart)   
+      
+                    # Getting the product veriations by card id 
+                    product_variation = []
+                    for item in cart_item:
+                        variations = item.variations.all()
+                        product_variation.append(list(variations))
+
+                    # Get the cart items from the user to access his product variations
+                    cart_item = CartItem.objects.filter(user = user)
+                    ex_var_list=[]
+                    id = []
+                    for item in cart_item:
+                        existing_variation = item.variations.all()
+                        ex_var_list.append(list(existing_variation))
+                        id.append(item.id)
+                        
+                        # for example
+                    # product_variation = [1,2,3,4,5,6]
+                    # ex_var_list = [1,2,3,4]
+
+                    for pr in product_variation:
+                        if pr in ex_var_list:
+                            index = ex_var_list.index(pr)
+                            item_id = id[index]
+                            item = CartItem.objects.get(id = item_id)
+                            item.quantity += 1
+                            item.user = user
+                            item.save()
+
+                        else:
+                            cart_item = CartItem.objects.filter(cart = cart)
+                            for item in cart_item:
+                                item.user = user
+                                item.save()
+
+            except:
+                pass
+            
             auth.login(request, user)
-            print("login done ")
-            messages.success(request,"You are now logged in")
-            return redirect("dashbord")
+            messages.success(request,"You are now logged in")        
+            url = request.META.get('HTTP_REFERER')
+            try:
+                if url:
+                    query = urlparse(url).query
+                    print('---------')
+                    params = dict(x.split('=') for x in query.split('&'))
+
+                    print(params)
+                    if 'next' in params:
+                        nextPage = params['next']
+                        return redirect(nextPage)
+            except:
+                return redirect('dashbord')
+                
+        
         else:
             messages.error(request, "Invaild login crediantial ")
             return redirect("login")
@@ -80,7 +135,6 @@ def logout(request):
     auth.logout(request)
     messages.error(request, "You are loged out")
     return redirect("login")
-
 
 
 def activate(request, uidb64, token):
@@ -106,6 +160,8 @@ def dashbord(request):
     return render(request, 'accounts/dashbord.html')
 
 
+# forgotPassword functionality start
+
 def forgotPassword(request):
     if request.method == "POST":
         email = request.POST['email']
@@ -126,7 +182,6 @@ def forgotPassword(request):
             send_email.send()
             messages.success(request, 'Password reset email has been sent to your email address.')
             return redirect('login')
-
         else:
             message.error(request, 'Account doesnot exit ')
             return redirect('forgotPassword')
@@ -151,7 +206,6 @@ def restPassword_validation(request, uidb64, token):
 
 
 def restPassword(request):
-
     if request.method == "POST":
         password = request.POST['password']
         confirm_password = request.POST['confirm_password']
@@ -168,3 +222,8 @@ def restPassword(request):
             return redirect('reset_password')
     else:
         return render(request, 'accounts/resetpassword.html')
+
+# forgotPassword functionality end
+
+
+

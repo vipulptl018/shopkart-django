@@ -21,6 +21,7 @@ class product(models.Model):
     def __str__(self):
         return self.product_name
     
+    # variation grouping 
 class VariationManager(models.Manager):
     def colors(self):
         return super(VariationManager, self).filter(variation_category='color', is_active = True)

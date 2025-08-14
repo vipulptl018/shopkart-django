@@ -11,6 +11,8 @@ from django.contrib.auth.decorators import login_required
 
 # second way use get_url and context processor 
 
+
+
 def store(request, category_slug = None):
     categories = None
     products = None
@@ -25,7 +27,6 @@ def store(request, category_slug = None):
         # pagination start end
        
         product_count = products.count
-    
     else:
     
         products = product.objects.all().filter(is_available = True).order_by('id')
@@ -67,6 +68,7 @@ def store(request, category_slug = None):
 
 
 
+
 def product_detail(request, category_slug, product_slug):
     try:
         single_product = product.objects.get(category__slug = category_slug, slug = product_slug)
@@ -88,9 +90,9 @@ def search(request):
         if keyword:
             products = product.objects.order_by('-create_date').filter(Q(desciptions__icontains = keyword) | Q(product_name__icontains = keyword))
         product_count = products.count()
-    context ={
+    context = {
         'products' : products,
         'product_count' : product_count,
     }
-    
     return render(request, 'store/store.html', context)
+
